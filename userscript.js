@@ -1,10 +1,10 @@
 // ==UserScript==
-// @name         YouTube Music Discord RPC
+// @name         csTimer RPC
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  Observe your YouTube Music activity so it can be displayed on Discord
+// @description  Observe your csTimer activity so it can be displayed on Discord
 // @author       adrian154
-// @match        https://music.youtube.com/*
+// @match        https://cstimer.net/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=reddit.com
 // @grant        none
 // ==/UserScript==
@@ -12,25 +12,21 @@
 (function () {
     'use strict';
 
-    const updateActivity = meta => {
-        const url = new URL("http://localhost:19347/song");
-        url.searchParams.set("artist", meta.artist);
-        url.searchParams.set("title", meta.title);
-        url.searchParams.set("url", meta.artwork[meta.artwork.length - 1].src)
-        fetch(url, {
-            method: "POST"
-        });
-    };
+    const observer = new MutationObserver((mutlist) => {
+        const avgstr = document.getElementById("avgstr");
+        if(avgstr.style.display === "block") {
+            const stats = [...avgstr.querySelectorAll("span")].map(span => span.textContent).join(" // ");
 
-    let currentMeta = null;
-    setInterval(() => {
-        const meta = navigator.mediaSession.metadata;
-        if (meta != currentMeta) {
-            currentMeta = meta;
-            console.log(meta);
-            updateActivity(meta);
+            const nobr = document.querySelector("nobr");
+            const event = nobr.childNodes[0].selectedOptions[0].textContent + " " + nobr.childNodes[2].selectedOptions[0].textContent;;
+
+            const url = new URL("http://localhost:19347/status");
+            url.searchParams.set("event", event);
+            url.searchParams.set("stats", stats);
+            fetch(url, {method: "POST"});
         }
-    }, 1000);
+    });
 
+    observer.observe(lcd, {attributes: true});
 
 })();

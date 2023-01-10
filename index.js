@@ -9,7 +9,8 @@ app.use((req, res, next) => {
     next();
 });
 
-rpc.login({clientId: "1031356587996094475"}).catch(console.error);
+//rpc.login({clientId: "1031356587996094475"}).catch(console.error);
+rpc.login({clientId: "1057554015694635028"}).catch(console.error);
 app.listen(19347, () => console.log("Webserver started"));
 
 let rpcReady = false;
@@ -18,17 +19,15 @@ rpc.on("ready", () => {
     rpcReady = true;
 });
 
-app.post("/song", (req, res) => {
+app.post("/status", (req, res) => {
     if(rpcReady) {
-        console.log("Now playing: " + req.query.title + " by " + req.query.artist);
         rpc.setActivity({
-            details: req.query.title,
-            state: "by " + req.query.artist,
-            largeImageKey: req.query.url,
-            startTimestamp: Date.now()
+            details: req.query.event,
+            state: req.query.stats,
+            largeImageKey: "cstimer"
         }).then(() => {
             res.sendStatus(200); 
-            console.log("Activity updated");
+            console.log("activity updated");
         }).catch(err => {
             console.error(err);
             res.sendStatus(500);
