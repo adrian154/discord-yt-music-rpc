@@ -9,8 +9,7 @@ app.use((req, res, next) => {
     next();
 });
 
-//rpc.login({clientId: "1031356587996094475"}).catch(console.error);
-rpc.login({clientId: "1057554015694635028"}).catch(console.error);
+rpc.login({clientId: "1083521529742098552"}).catch(console.error);
 app.listen(19347, () => console.log("Webserver started"));
 
 let rpcReady = false;
@@ -21,13 +20,14 @@ rpc.on("ready", () => {
 
 app.post("/status", (req, res) => {
     if(rpcReady) {
+        clearTimeout(clearActivityTimeout);
         rpc.setActivity({
-            details: req.query.event,
-            state: req.query.stats,
-            largeImageKey: "cstimer"
+            details: req.query.page,
+            created_at: Date.now(),
+            largeImageKey: "wordmark"
         }).then(() => {
             res.sendStatus(200); 
-            console.log("activity updated");
+            console.log("now reading: " + req.query.page);
         }).catch(err => {
             console.error(err);
             res.sendStatus(500);
@@ -36,3 +36,12 @@ app.post("/status", (req, res) => {
         res.sendStatus(500);
     }
 });
+
+// wait 3 seconds to clear activity
+// if we switch to another Wiki tab this lets us avoid an unnecesary clear
+let clearActivityTimeout = null;
+app.post("/clear", (req, res) => {
+    if(rpcReady) {
+        clearActivityTimeout = setTimeout(() => rpc.clearActivity(), 3000);
+    }
+}); 
