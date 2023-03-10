@@ -15,16 +15,12 @@
     const title = document.querySelector("h1").textContent;
 
     const updateStatus = () => {
-        fetch(`http://localhost:19347/status?page=${encodeURIComponent(title)}`, {method: "POST"});
+        if(!document.hidden) {
+            fetch(`http://localhost:19347/status?page=${encodeURIComponent(title)}&url=${encodeURIComponent(location.href)}`, {method: "POST"});
+        }
     };
 
     updateStatus();
-    document.addEventListener("visibilitychange", event => {
-        if(document.hidden) {
-            fetch("http://localhost:19347/clear", {method: "POST"});
-        } else {
-            updateStatus();
-        }
-    });  
+    document.addEventListener("visibilitychange", updateStatus);  
 
 })();

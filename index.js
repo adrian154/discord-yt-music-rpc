@@ -18,30 +18,35 @@ rpc.on("ready", () => {
     rpcReady = true;
 });
 
+let clearActivityTimeout = null;
+let page = null;
+
 app.post("/status", (req, res) => {
     if(rpcReady) {
-        clearTimeout(clearActivityTimeout);
-        rpc.setActivity({
-            details: req.query.page,
-            created_at: Date.now(),
-            largeImageKey: "wordmark"
-        }).then(() => {
-            res.sendStatus(200); 
-            console.log("now reading: " + req.query.page);
-        }).catch(err => {
-            console.error(err);
-            res.sendStatus(500);
-        });
+        if(page != req.query.page) {
+            page = req.query.page;
+            clearTimeout(clearActivityTimeout);
+            clearActivityTimeout = setTimeout(() => {
+                console.log("clearing status due to inactivity");
+                rpc.clearActivity();
+            }, 30*60*1000);
+            rpc.setActivity({
+                details: req.query.page,
+                created_at: Date.now(),
+                largeImageKey: "wikipedia",
+                buttons: [{
+                    label: "Read",
+                    url: req.query.url
+                }]
+            }).then(() => {
+                res.sendStatus(200); 
+                console.log("now reading: " + req.query.page);
+            }).catch(err => {
+                console.error(err);
+                res.sendStatus(500);
+            });
+        }
     } else {
         res.sendStatus(500);
     }
 });
-
-// wait 3 seconds to clear activity
-// if we switch to another Wiki tab this lets us avoid an unnecesary clear
-let clearActivityTimeout = null;
-app.post("/clear", (req, res) => {
-    if(rpcReady) {
-        clearActivityTimeout = setTimeout(() => rpc.clearActivity(), 3000);
-    }
-}); 
