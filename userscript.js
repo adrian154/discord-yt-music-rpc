@@ -16,18 +16,19 @@
         const url = new URL("http://localhost:19347/song");
         url.searchParams.set("artist", meta.artist);
         url.searchParams.set("title", meta.title);
-        url.searchParams.set("url", meta.artwork[meta.artwork.length - 1].src)
+        url.searchParams.set("iconUrl", meta.artwork[meta.artwork.length - 1].src)
+        url.searchParams.set("songUrl", window.location.href);
         fetch(url, {
             method: "POST"
         });
     };
 
-    let currentMeta = null;
+    let currentSong = null;
     setInterval(() => {
         const meta = navigator.mediaSession.metadata;
-        if (meta != currentMeta) {
-            currentMeta = meta;
-            console.log(meta);
+        const song = meta.artist + meta.title;
+        if (song != currentSong) {
+            currentMeta = song;
             updateActivity(meta);
         }
     }, 1000);

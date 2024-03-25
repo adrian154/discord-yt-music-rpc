@@ -18,17 +18,27 @@ rpc.on("ready", () => {
     rpcReady = true;
 });
 
+let clearActivityTimer = null;
+const reset = () => {
+    clearTimeout(clearActivityTimer);
+    clearActivityTimer = setTimeout(() => {
+        console.log("Clearing status due to inactivity");
+        rpc.clearActivity()
+    }, 10*60*1000);
+};
+
 app.post("/song", (req, res) => {
     if(rpcReady) {
         console.log("Now playing: " + req.query.title + " by " + req.query.artist);
         rpc.setActivity({
             details: req.query.title,
             state: "by " + req.query.artist,
-            largeImageKey: req.query.url,
-            startTimestamp: Date.now()
+            largeImageKey: req.query.iconUrl,
+            buttons: [{label: "Listen", url: req.query.songUrl}]
         }).then(() => {
             res.sendStatus(200); 
-            console.log("Activity updated");
+            reset();
+            console.log("Status updated");
         }).catch(err => {
             console.error(err);
             res.sendStatus(500);
